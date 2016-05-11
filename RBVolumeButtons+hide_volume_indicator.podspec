@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "RBVolumeButtons+hide_volume_indicator"
-  s.version      = "0.1.1"
+  s.version      = "0.1.2"
   s.summary      = "This lets you steal the volume up and volume down buttons on iOS."
   s.homepage     = "https://github.com/blladnar/RBVolumeButtons"
   s.license      = { :type => 'Apache License, Version 2.0', :file => 'LICENSE' }
