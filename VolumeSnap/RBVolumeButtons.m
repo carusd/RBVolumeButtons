@@ -115,11 +115,33 @@ void volumeListenerCallback (
     AudioSessionSetActive(YES);
     
     launchVolume = [[MPMusicPlayerController applicationMusicPlayer] volume];
+    hadToLowerVolume = launchVolume == 1.0;
+    hadToRaiseVolume = launchVolume == 0.0;
     
     CGRect frame = CGRectMake(0, -100, 10, 0);
     self.volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
     [self.volumeView sizeToFit];
     [[[[UIApplication sharedApplication] windows] objectAtIndex:0] addSubview:self.volumeView];
+    
+    // Avoid flashing the volume indicator
+    if (hadToLowerVolume || hadToRaiseVolume)
+    {
+        dispatch_async(dispatch_get_current_queue(), ^{
+            if( hadToLowerVolume )
+            {
+                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
+                launchVolume = 0.95;
+            }
+            
+            if( hadToRaiseVolume )
+            {
+                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
+                launchVolume = 0.05;
+            }
+        });
+    }
+    
+    
     
     [self initializeVolumeButtonStealer];
     
@@ -174,6 +196,15 @@ void volumeListenerCallback (
     
     AudioSessionRemovePropertyListenerWithUserData(kAudioSessionProperty_CurrentHardwareOutputVolume, volumeListenerCallback, self);
     
+    if( hadToLowerVolume )
+    {
+        [[MPMusicPlayerController applicationMusicPlayer] setVolume:1.0];
+    }
+    
+    if( hadToRaiseVolume )
+    {
+        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.0];
+    }
     
     [self.volumeView removeFromSuperview];
     self.volumeView = nil;
