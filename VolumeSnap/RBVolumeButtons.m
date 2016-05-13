@@ -129,13 +129,13 @@ void volumeListenerCallback (
         dispatch_async(dispatch_get_current_queue(), ^{
             if( hadToLowerVolume )
             {
-                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
+//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
                 launchVolume = 0.95;
             }
             
             if( hadToRaiseVolume )
             {
-                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
+//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
                 launchVolume = 0.05;
             }
         });
