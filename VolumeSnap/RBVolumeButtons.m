@@ -118,15 +118,15 @@ void volumeListenerCallback (
     hadToLowerVolume = launchVolume == 1.0;
     hadToRaiseVolume = launchVolume == 0.0;
     
-//    CGRect frame = CGRectMake(0, -100, 10, 0);
-//    self.volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
-//    [self.volumeView sizeToFit];
-//    [[[[UIApplication sharedApplication] windows] objectAtIndex:0] addSubview:self.volumeView];
+    CGRect frame = CGRectMake(0, -100, 10, 0);
+    self.volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
+    [self.volumeView sizeToFit];
+    [[[[UIApplication sharedApplication] windows] objectAtIndex:0] addSubview:self.volumeView];
     
     // Avoid flashing the volume indicator
     if (hadToLowerVolume || hadToRaiseVolume)
     {
-        dispatch_async(dispatch_get_current_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if( hadToLowerVolume )
             {
                 [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
@@ -139,6 +139,19 @@ void volumeListenerCallback (
                 launchVolume = 0.05;
             }
         });
+//        dispatch_async(dispatch_get_current_queue(), ^{
+//            if( hadToLowerVolume )
+//            {
+//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
+//                launchVolume = 0.95;
+//            }
+//            
+//            if( hadToRaiseVolume )
+//            {
+//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
+//                launchVolume = 0.05;
+//            }
+//        });
     }
     
     
@@ -196,15 +209,15 @@ void volumeListenerCallback (
     
     AudioSessionRemovePropertyListenerWithUserData(kAudioSessionProperty_CurrentHardwareOutputVolume, volumeListenerCallback, self);
     
-    if( hadToLowerVolume )
-    {
-        [[MPMusicPlayerController applicationMusicPlayer] setVolume:1.0];
-    }
-    
-    if( hadToRaiseVolume )
-    {
-        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.0];
-    }
+//    if( hadToLowerVolume )
+//    {
+//        [[MPMusicPlayerController applicationMusicPlayer] setVolume:1.0];
+//    }
+//    
+//    if( hadToRaiseVolume )
+//    {
+//        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.0];
+//    }
     
     [self.volumeView removeFromSuperview];
     self.volumeView = nil;
