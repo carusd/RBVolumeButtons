@@ -21,6 +21,9 @@
 @property BOOL suspended;
 @property (retain) UIView *volumeView;
 
+@property (nonatomic) BOOL hadToLowerVolume;
+@property (nonatomic) BOOL hadToRaiseVolume;
+
 @end
 
 @implementation RBVolumeButtons
@@ -50,7 +53,9 @@ void volumeListenerCallback (
     
     if( volume > [(RBVolumeButtons*)inClientData launchVolume] )
     {
+        RBVolumeButtons *volumeBtn = (RBVolumeButtons *)inClientData;
         [(RBVolumeButtons*)inClientData volumeUp];
+        
     }
     else if( volume < [(RBVolumeButtons*)inClientData launchVolume] )
     {
@@ -115,48 +120,47 @@ void volumeListenerCallback (
     AudioSessionSetActive(YES);
     
     launchVolume = [[MPMusicPlayerController applicationMusicPlayer] volume];
-    hadToLowerVolume = launchVolume == 1.0;
-    hadToRaiseVolume = launchVolume == 0.0;
+    self.hadToLowerVolume = launchVolume == 1.0;
+    self.hadToRaiseVolume = launchVolume == 0.0;
     
-    CGRect frame = CGRectMake(0, -100, 10, 0);
+    CGRect frame = CGRectMake(0, -100, 10, 10);
     self.volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
     [self.volumeView sizeToFit];
     [[[[UIApplication sharedApplication] windows] objectAtIndex:0] addSubview:self.volumeView];
+    UIWindow *window = [[UIApplication sharedApplication] windows].firstObject;
+    [window setNeedsLayout];
+    [window layoutIfNeeded];
     
-    // Avoid flashing the volume indicator
-    if (hadToLowerVolume || hadToRaiseVolume)
-    {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if( hadToLowerVolume )
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (self.hadToLowerVolume || self.hadToRaiseVolume)
             {
-                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
-                launchVolume = 0.95;
+                dispatch_async(dispatch_get_current_queue(), ^{
+                    if( self.hadToLowerVolume )
+                    {
+                        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
+                        launchVolume = 0.95;
+                        
+                        
+                    }
+                    
+                    if( self.hadToRaiseVolume )
+                    {
+                        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
+                        launchVolume = 0.05;
+                        
+                        
+                    }
+                });
             }
             
-            if( hadToRaiseVolume )
-            {
-                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
-                launchVolume = 0.05;
-            }
+            [self initializeVolumeButtonStealer];
         });
-//        dispatch_async(dispatch_get_current_queue(), ^{
-//            if( hadToLowerVolume )
-//            {
-//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.95];
-//                launchVolume = 0.95;
-//            }
-//            
-//            if( hadToRaiseVolume )
-//            {
-//                [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.05];
-//                launchVolume = 0.05;
-//            }
-//        });
-    }
+    });
     
     
     
-    [self initializeVolumeButtonStealer];
+    
     
     if (!self.suspended)
     {
@@ -172,6 +176,8 @@ void volumeListenerCallback (
                                                      name:UIApplicationDidBecomeActiveNotification      // <- Active
                                                    object:nil];
     }
+    
+    
 }
 
 - (void)suspendStealingVolumeButtonEvents:(NSNotification *)notification
@@ -209,20 +215,20 @@ void volumeListenerCallback (
     
     AudioSessionRemovePropertyListenerWithUserData(kAudioSessionProperty_CurrentHardwareOutputVolume, volumeListenerCallback, self);
     
-//    if( hadToLowerVolume )
-//    {
-//        [[MPMusicPlayerController applicationMusicPlayer] setVolume:1.0];
-//    }
-//    
-//    if( hadToRaiseVolume )
-//    {
-//        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.0];
-//    }
+    //    if( hadToLowerVolume )
+    //    {
+    //        [[MPMusicPlayerController applicationMusicPlayer] setVolume:1.0];
+    //    }
+    //
+    //    if( hadToRaiseVolume )
+    //    {
+    //        [[MPMusicPlayerController applicationMusicPlayer] setVolume:0.0];
+    //    }
     
     [self.volumeView removeFromSuperview];
     self.volumeView = nil;
     
-//    AudioSessionSetActive(NO);
+    //    AudioSessionSetActive(NO);
     
     self.isStealingVolumeButtons = NO;
 }

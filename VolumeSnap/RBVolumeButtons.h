@@ -13,8 +13,8 @@ typedef void (^ButtonBlock)();
 @interface RBVolumeButtons : NSObject
 {
     float launchVolume;
-    BOOL hadToLowerVolume;
-    BOOL hadToRaiseVolume;
+    //    BOOL hadToLowerVolume;
+    //    BOOL hadToRaiseVolume;
     
     BOOL _isStealingVolumeButtons;
     BOOL _suspended;
@@ -29,3 +29,4 @@ typedef void (^ButtonBlock)();
 -(void)stopStealingVolumeButtonEvents;
 
 @end
+
